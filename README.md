@@ -8,9 +8,9 @@ Goal: Rank spatial zones on a landscape by their conservation value. Conservatio
 
 ### Contents
 
-`scripts` contains `app.R`, which defines the shiny user interface and server, and `helpers.R`, which defines functions applied in `app.R`
-
 `data` contains example input datasets
+
+`scripts` contains `app.R`, which defines the shiny user interface and server, and `helpers.R`, which defines functions applied in `app.R`
 
 ### Run from the R console
 
