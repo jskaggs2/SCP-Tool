@@ -14,10 +14,10 @@ Goal: Rank spatial zones on a landscape by their conservation value. Conservatio
 
 ### Run from the R console
 
-Install prerequisities
+1. Install prerequisities
 
 `install.packages(c(shiny, DT, sf))`
 
-Run application
+2. Run application
 
 `shiny::runApp("C:/scp/scripts")`
