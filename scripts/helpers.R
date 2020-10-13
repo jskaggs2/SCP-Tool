@@ -2,7 +2,7 @@ cool_curve <- function(temperature_start,cooling_rate,iter){
   temperature_start * ((1-cooling_rate)^iter)
 }
 
-evaluate_prioritization <- function(solution_name,field_zone,field_value,df_original,df_result,evalThreshold){
+evaluate_prioritization <- function(solution_name, field_zone, field_value, df_original, df_result, evalThreshold){
   fields_rep <- names(df_original)[grep(pattern = field_value, x = names(df_original))] 
   
   dat_rank <- merge(
@@ -45,21 +45,46 @@ map_all_results <- function(result, path_sf_zones){
 }
 
 map_results <- function(result, path_sf_zones, s){
-  j <- as.numeric(s)
+  s <- as.numeric(s)
   nad16n <- "+proj=utm +zone=16 +ellps=GRS80 +datum=NAD83 +units=m +no_defs" #temporary
   #solutions <- result[["settings"]]$solutions
   field_zone <- result[["settings"]]$field_zone
-  main <- names(result[["summary"]])[j]
-  ranks <- result[["summary"]][c(1,j)]
+  main <- names(result[["summary"]])[s]
+  ranks <- result[["summary"]][c(1,s)]
   huc12 <- sf::st_read(path_sf_zones, quiet = TRUE) #temporary
   huc12 <- st_transform(huc12, crs = st_crs(nad16n)) #temporary
   huc12_result <- merge(huc12, ranks, by = field_zone, all.x = TRUE)
   plot(huc12_result[main], main = main)
 }
 
+map_results_leaflet <- function(result, path_sf_zones, s){
+  # attach data to sf object
+  s <- as.numeric(s)
+  nad16n <- "+proj=utm +zone=16 +ellps=GRS80 +datum=NAD83 +units=m +no_defs" #temporary
+  field_zone <- result[["settings"]]$field_zone
+  main <- names(result[["summary"]])[s]
+  ranks <- result[["summary"]][1:(s+1)]
+  huc12 <- sf::st_read(path_sf_zones, quiet = TRUE) #temporary
+  huc12 <- st_transform(huc12, crs = st_crs(4326)) #temporary
+  huc12_result <- merge(huc12, ranks, by = field_zone, all.x = TRUE)
+  
+  # define plot attributes
+  rank_name <- names(result[["summary"]])[s+1]
+  binpal <- colorBin("YlOrRd", huc12_result[[rank_name]], bins = 10, pretty = FALSE, reverse = TRUE)
+  label <- paste(
+    "Name:", huc12_result$Name, ";",
+    "Rank:", huc12_result[[rank_name]])
+  
+  # plot
+  leaflet(huc12_result) %>% 
+    addProviderTiles("OpenStreetMap.Mapnik") %>% 
+    addPolygons(stroke = NA, fillColor = binpal(huc12_result[[rank_name]]), fillOpacity = 0.7,
+                highlight = highlightOptions(color = "white", weight = 1, bringToFront = TRUE), label = label)
+}
+
 plot_eval <- function(result, s){
-  #zones <- length(result[["settings"]]$zones)
-  zones <- nrow(result[["settings"]]$df) #temporary
+  zones <- length(result[["settings"]]$zones)
+  features <- result[["settings"]]$features 
   e <- result[["evals"]][[s]]
   main <- names(result[["summary"]])[s+1]
   etab <- as.data.frame(table(e))
@@ -69,7 +94,7 @@ plot_eval <- function(result, s){
   eval_title <- paste("Accumulation curve for", main)
   eval_ylab <- "cumulative count of features represented"
   eval_xlab <- "zones protected"
-  eval_ylim <- c(0,length(features)+(0.1*length(features)))
+  eval_ylim <- c(0,length(features)*1.1)
   eval_xlim <- c(0, zones)
   plot(evs[[paste0("cumsum_", s)]] ~ evs$e+1, pch = 1,ylim = eval_ylim, xlim = eval_xlim, main = eval_title , xlab = eval_xlab, ylab = eval_ylab)
   #legend("right", legend = main, col = "black", pch = 1, cex=0.8)
@@ -77,8 +102,7 @@ plot_eval <- function(result, s){
 
 plot_eval_all <- function(result){
   features <- result[["settings"]]$features
-  #zones <- length(result[["settings"]]$zones)
-  zones <- nrow(result[["settings"]]$df) #temporary
+  zones <- length(result[["settings"]]$zones)
   evs <- data.frame(e = seq(0, zones, 1))
   solutions <- result[["settings"]]$solutions
   if(solutions > 1){
@@ -97,7 +121,7 @@ plot_eval_all <- function(result){
     eval_title <- "Accumulation curves for all solutions in batch"
     eval_ylab <- "cumulative count of features represented"
     eval_xlab <- "zones protected"
-    plot(evs$cumsum_1 ~ evs$e+1, pch = 1, ylim = c(0,length(features)+5), main = eval_title , xlab = eval_xlab, ylab = eval_ylab)
+    plot(evs$cumsum_1 ~ evs$e+1, pch = 1, ylim = c(0,length(features)*1.1), main = eval_title , xlab = eval_xlab, ylab = eval_ylab)
     cols <- c("pink1", "violet", "mediumpurple1", "slateblue1", "purple", "purple3",
               "turquoise2", "skyblue", "steelblue", "blue2", "navyblue",
               "orange", "tomato", "coral2", "palevioletred", "violetred", "red2",
@@ -150,7 +174,6 @@ plot_eval_map <- function(result, path_sf_zones, s){
 
 prioritization_shiny <- function(solutions, df, features, algorithm, field_zone, field_value, useCost, field_cost, useFeatureWeight, weight, useProtectedAreas, protectedAreas, useAnnealing, temperature_start, cooling_rate, evalThreshold){
   
-  withProgress(message = 'Prioritizing landscape', min = 0, max = 190, value = 0, { #shiny NOT DYNAMIC
   
   ## -------------------------
   ## Check for valid arguments
@@ -226,6 +249,7 @@ prioritization_shiny <- function(solutions, df, features, algorithm, field_zone,
   ## Calculate n solutions
   ## ---------------------
   
+  
   for(j in 1:solutions){
     start_solution_time <- Sys.time()
     # Get solution name
@@ -235,14 +259,19 @@ prioritization_shiny <- function(solutions, df, features, algorithm, field_zone,
     #print(paste0("Total number of potential solutions is: ", factorial(zones)/2)) # BEWARE
     out <- data.frame(zones); colnames(out) <- field_zone # output dataframe
     drops <- c() # accumulate zone names that are dropped after each iteration
+    sett[["zones"]] <- zones
+
+    # Shiny progress bar
+    withProgress(message = paste("Solution", j), min = 0, max = length(zones), value = 0, { 
+  
     
     ## ----------------------------------
     ## For each solution, iterate i times
     ## ----------------------------------
     
     
-    #for(i in 1:10){ # debug
-    for(i in 1:length(zones)){
+    for(i in 1:3){ # debug
+    #for(i in 1:length(zones)){
       # In shiny ap, report iterations as progress bar
       incProgress(amount = 1, detail = paste("Remaining zones:", length(zones) - i)) # Shiny
       remaining_zones <- setdiff(zones, drops)
@@ -333,8 +362,11 @@ prioritization_shiny <- function(solutions, df, features, algorithm, field_zone,
         evalThreshold = evalThreshold)
       
       print(paste("Solution time:", Sys.time()-start_solution_time))
-    }
+      
+      }
+    })
   }
+  
   ## --------------------------------------------
   ## Save and return the results of all solutions
   ## --------------------------------------------
@@ -357,5 +389,5 @@ prioritization_shiny <- function(solutions, df, features, algorithm, field_zone,
   result[["settings"]] <- sett
   print("return result")
   return(result)
-  })
-}
+  
+} #function
