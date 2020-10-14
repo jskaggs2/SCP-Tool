@@ -21,3 +21,15 @@ Goal: Rank spatial zones on a landscape by their conservation value. Conservatio
 2. Run application
 
 `shiny::runApp("C:/scp/scripts")` # path to folder containing app.R
+
+3. Upload data
+
+Load "../data/dat.csv" into `input data` on the left panel. 
+
+4. Adjust other settings
+
+Note that not all settings have been tested.
+
+5. Run
+
+Click `Run` at the top of the sidebar. Note progress bar on bottom right (190 zones takes approximately 10 minutes / solution). Once this progress bar disappears, click the View Solution tab. A solution may take ~10 seconds to render.
