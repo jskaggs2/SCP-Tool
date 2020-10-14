@@ -1,6 +1,6 @@
 # SCP-Tool
 
-last updated: 2020-10-13
+last updated: 2020-10-14
 
 ### Spatial conservation prioritization tool
 
@@ -16,7 +16,7 @@ Goal: Rank spatial zones on a landscape by their conservation value. Conservatio
 
 1. Install prerequisities
 
-`install.packages(c(shiny, DT, sf, leaflet))`
+`install.packages(c("shiny", "DT", "sf", "leaflet"))`
 
 2. Run application
 
