@@ -66,7 +66,7 @@ map_results_leaflet <- function(result, path_sf_zones, s){
   ranks <- result[["summary"]][1:(s+1)]
   huc12 <- sf::st_read(path_sf_zones, quiet = TRUE) #temporary
   huc12 <- st_transform(huc12, crs = st_crs(4326)) #temporary
-  huc12_result <- merge(huc12, ranks, by = field_zone, all.x = TRUE)
+  huc12_result <- merge(huc12, ranks, by = field_zone, all.x = FALSE)
   
   # define plot attributes
   rank_name <- names(result[["summary"]])[s+1]
@@ -179,6 +179,7 @@ prioritization_shiny <- function(solutions, df, features, algorithm, field_zone,
   ## Check for valid arguments
   ## -------------------------
   
+  
   # Solutions
   if (missing(solutions)){
     solutions = 1
@@ -186,7 +187,8 @@ prioritization_shiny <- function(solutions, df, features, algorithm, field_zone,
   message("Identifying ", solutions, " prioritization solutions.")
   # Algorithm
   if(algorithm != "CAZ" && algorithm != "ABF"){
-    stop("Algorithm must be 'ABF' or 'CAZ'.")}
+    stop("Algorithm must be 'ABF' or 'CAZ'.")
+  }
   message("Algorithm specified: ", algorithm)
   # Features
   if(missing(features) | length(features) < 1){
@@ -195,19 +197,23 @@ prioritization_shiny <- function(solutions, df, features, algorithm, field_zone,
   message("Features specified: ", length(features))
   # Cost
   if(useCost == FALSE | missing(field_cost) | field_cost == "None"){
-    df$TEMP_cost <- 1
-    field_cost <- "TEMP_cost"
+    print("applying constant cost")
+    #df$TEMP_cost <- 1
+    #field_cost <- "TEMP_cost"
     message("Cost specified: None")
   }else{
-    message("Cost specified: ", field_cost)}
+    message("Cost specified: ", field_cost)
+  }
   # Weight
   if(useFeatureWeight == FALSE | missing(weight)){
     weight <- 1
-    message("Feature weight specified: None")}
+    message("Feature weight specified: None")
+  }
   # Protected areas
-  if(useProtectedAreas == FALSE | missing(protectedAreas) | length(protectedAreas) < 1){ #temporary?
+  if(missing(protectedAreas) | length(protectedAreas) < 1){ #temporary?
   #if(useProtectedAreas == FALSE | length(protectedAreas) < 1){
-    protectedAreas <- c()}
+    protectedAreas <- c()
+  }
   message("Protected areas specified: ", length(protectedAreas))
   # Simulated annealing
   if((useAnnealing == TRUE & missing(temperature_start)) | (useAnnealing == TRUE & missing(cooling_rate))){
@@ -223,9 +229,11 @@ prioritization_shiny <- function(solutions, df, features, algorithm, field_zone,
   }
   message("Evaluation threshold: 1")
   
+  
   ## --------------------
   ## Define output object
   ## --------------------
+  
   
   result <- list() 
   sol <- list()
@@ -244,6 +252,7 @@ prioritization_shiny <- function(solutions, df, features, algorithm, field_zone,
     temperature_start = temperature_start,
     cooling_rate = cooling_rate,
     evalThreshold = evalThreshold)
+  
   
   ## ---------------------
   ## Calculate n solutions
@@ -315,9 +324,11 @@ prioritization_shiny <- function(solutions, df, features, algorithm, field_zone,
         out[out[[field_zone]] == zone, paste0("Di_", i)] <- delta_spp / cost_zone
       }
       
+      
       ## ---------------------------
       ## Drop zone with lowest value
       ## ---------------------------
+      
       
       out[[field_zone]] <- as.character(out[[field_zone]])
       # Calculate absolute minimum.
@@ -345,9 +356,11 @@ prioritization_shiny <- function(solutions, df, features, algorithm, field_zone,
       out[out[[field_zone]] %in% drop, solution] <- rank
       drops <- c(drops, drop)
       
+      
       ## ---------------------------------------
       ## Save and evaluate results of a solution
       ## ---------------------------------------
+      
       
       # Save detailed results of a solution.
       sol[[j]] <- out 
@@ -367,9 +380,11 @@ prioritization_shiny <- function(solutions, df, features, algorithm, field_zone,
     })
   }
   
+  
   ## --------------------------------------------
   ## Save and return the results of all solutions
   ## --------------------------------------------
+  
   
   # Create a summary data frame that just includes zones and
   # ranks from each solution.
