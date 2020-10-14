@@ -8,16 +8,16 @@ Goal: Rank spatial zones on a landscape by their conservation value. Conservatio
 
 ### Contents
 
-`data` contains example input datasets
+**data** contains example input datasets
 
-`scripts` contains `app.R`, which defines the shiny user interface and server, and `helpers.R`, which defines functions applied in `app.R`
+**scripts** contains `app.R`, which defines the shiny user interface and server, and `helpers.R`, which defines functions applied in `app.R`
 
 ### Run from the R console
 
 1. Install prerequisities
 
-`install.packages(c(shiny, DT, sf))`
+`install.packages(c(shiny, DT, sf, leaflet))`
 
 2. Run application
 
-`shiny::runApp("C:/scp/scripts")`
+`shiny::runApp("C:/scp/scripts")` # path to folder containing app.R
