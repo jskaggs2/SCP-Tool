@@ -63,7 +63,7 @@ ui <- fluidPage(
       selectInput(inputId = "algorithm", label = "Algorithm", choices = c("Core Area Zonation" = "CAZ", "Additive Benefit Function" = "ABF")),
       
       # field_value
-      selectInput(inputId = "field_value", label = "Feature representation", choices = c("Presence-Absence" = "rep001", "Modelled Habitat Suitability" = "rep003")),
+      selectInput(inputId = "field_value", label = "Feature representation", choices = c("Presence-Absence" = "rep001", "Modelled Habitat Suitability" = "rep003"), selected = "Presence-Absence"),
       
       # field_zone
       #textInput(inputId = "field_zone", label = "Zones", value = "HUC12"),
@@ -143,6 +143,7 @@ ui <- fluidPage(
                          #plotOutput("map", click = "plot_click"),
                          #verbatimTextOutput("mapinfo"),
                          leafletOutput("map"),
+                         h4("MOVE BELOW OUTPUTS TO DIFFERENT TAB?"),
                          plotOutput("eval"),
                          DT::dataTableOutput("table_pa")),
                 # Tab 3
@@ -179,8 +180,7 @@ ui <- fluidPage(
 
 
 # Cheating input data
-load("../data/dat.Rdata")
-path_sf_zones <- "../data/huc12_uc.shp"
+path_sf_zones <- "../data/huc12_uc.shp" #temporary make user supply this
 source("helpers.R")
 
 # Notes
@@ -193,8 +193,8 @@ server <- function(input, output){
     
     ## Required
     dat <- read.csv(input$dataFile$datapath, header = TRUE, stringsAsFactors = FALSE)
-    features_values <- names(dat[grep(pattern = field_value, x = names(dat))]) #temporary
-    features <- unique(gsub(pattern = "*.rep00.*", replacement = "", x = features)) #temporary
+    features_values <- names(dat[grep(pattern = input$field_value, x = names(dat))]) #temporary
+    features <- unique(gsub(pattern = "*.rep00.*", replacement = "", x = features_values)) #temporary
     field_zone <- "HUC12" #temporary
     dat[[field_zone]] <- paste0(0, dat[[field_zone]]) #temporary
     

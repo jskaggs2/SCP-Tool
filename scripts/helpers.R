@@ -278,9 +278,9 @@ prioritization_shiny <- function(solutions, df, features, algorithm, field_zone,
     ## For each solution, iterate i times
     ## ----------------------------------
     
-    
-    for(i in 1:3){ # debug
-    #for(i in 1:length(zones)){
+
+    #for(i in 1:3){ # debug
+    for(i in 1:length(zones)){
       # In shiny ap, report iterations as progress bar
       incProgress(amount = 1, detail = paste("Remaining zones:", length(zones) - i)) # Shiny
       remaining_zones <- setdiff(zones, drops)
