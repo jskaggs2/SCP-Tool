@@ -84,7 +84,7 @@ ui <- fluidPage(
       checkboxInput(inputId = "subsetFeatures", label = "Subset features", value = FALSE),
       conditionalPanel(
         condition = "input.subsetFeatures==1", #javascript
-        fileInput("featuresFile", "Features", accept = ".csv")),
+        fileInput("featuresFile", "Identify features to retain", accept = ".csv")),
 
       # field_cost
       checkboxInput(inputId = "useCost", label = "Use zone cost", value = FALSE),
