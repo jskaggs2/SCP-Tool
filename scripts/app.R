@@ -60,7 +60,7 @@ ui <- fluidPage(
       numericInput(inputId = "solutions", label = "Number of solutions", value = 1, min = 1, max = 100, step = 1),
       
       # algorithm
-      selectInput(inputId = "algorithm", label = "Algorithm", choices = c("Core Area Zonation" = "CAZ", "Additive Benefit Function" = "ABF")),
+      selectInput(inputId = "algorithm", label = "Algorithm", choices = c("Core Area Zonation" = "CAZ", "Additive Benefit Function" = "ABF"), selected = "Core Area Zonation"),
       
       # field_value
       selectInput(inputId = "field_value", label = "Feature representation", choices = c("Presence-Absence" = "rep001", "Modelled Habitat Suitability" = "rep003"), selected = "Presence-Absence"),
@@ -90,13 +90,13 @@ ui <- fluidPage(
       checkboxInput(inputId = "useCost", label = "Use zone cost", value = FALSE),
       conditionalPanel(
         condition = "input.useCost==1", #javascript
-        selectInput(inputId = "field_cost", label = "Cost", choices = c("Local drainage area" = "DA_km2", "Total drainage area" = "TotDA_km2"))),
+        selectInput(inputId = "field_cost", label = "Cost", choices = c("Local drainage area" = "DA_km2", "Total drainage area" = "TotDA_km2"), selected = "Local Drainage Area")),
       
       # weight
       checkboxInput(inputId = "useWeight", label = "Use feature weight", value = FALSE),
       conditionalPanel(
         condition = "input.useWeight==1", #javascript
-        textInput(inputId = "weight", label = "Feature weight")),
+        textInput(inputId = "weight", label = "Feature weight", value = "Doesn't Work")),
       
       # protectedAreas using file
       checkboxInput(inputId = "useProtectedAreas_file", label = "Use protected areas - file", value = FALSE),
